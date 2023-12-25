@@ -8,7 +8,7 @@ const ImageUploader = () => {
 
   useEffect(() => {
     // Make an API call to retrieve the list of previously uploaded data
-    fetch('http://localhost:8080/alluser')
+    fetch('http://localhost:5000/alluser')
       .then((response) => response.json())
       .then((data) => {
         // Update the state with the retrieved data

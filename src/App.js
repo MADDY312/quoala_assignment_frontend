@@ -4,6 +4,8 @@
 
 // export default function App() {
 //   return (
+
+//     // <div>bhai please yaar</div>
 //     <Router>
 //       <Routes>
 //         <Route path="/products" element={<ImageUploader />} />
@@ -22,7 +24,7 @@ const ImageUploader = () => {
 
   useEffect(() => {
     // Make an API call to retrieve the list of previously uploaded data
-    fetch('http://localhost:5000/alluser')
+    fetch('https://litescanpy.pythonanywhere.com/alluser')
       .then((response) => response.json())
       .then((data) => {
         // Update the state with the retrieved data
@@ -47,7 +49,7 @@ const ImageUploader = () => {
   const handleUpload = () => {
     if (image) {
       // Send the image to the Flask backend
-      fetch('http://localhost:5000/get_image', {
+      fetch('https://litescanpy.pythonanywhere.com/get_image', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -68,18 +70,114 @@ const ImageUploader = () => {
         });
     }
   };
+  const [searchQuery, setSearchQuery] = useState('');
+  const [searchResults, setSearchResults] = useState([]);
+
+  const handleSearchChange = (event) => {
+    setSearchQuery(event.target.value);
+  };
+
+  const handleSearch = () => {
+    // Send the search query to the Flask backend
+    fetch('https://litescanpy.pythonanywhere.com/search', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ query: searchQuery }),
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        // Handle the response from the backend
+        console.log(data);
+        // Update the search results
+        // setSearchResults(data);
+        setSearchResults(Array.isArray(data) ? data : [data]);
+      })
+      .catch((error) => {
+        console.error('Error:', error);
+      });
+  };
 
   return (
-    <div>
+    
+    <div className="container">
+       <h1 className="heading">Thai ID Card OCR</h1>
+      <p className="attribution">Made by Vasu Gupta (20UCC114) for Qoala Assignment</p>
+
       <div>
-        <input type="file" onChange={handleImageChange} />
-        <button onClick={handleUpload}>Upload Image</button>
+      <input
+          type="file"
+          onChange={handleImageChange}
+          style={{ margin: '10px 0', padding: '10px' }}
+        />
+        <button onClick={handleUpload} className="upload-button">
+          Upload Image
+        </button>
       </div>
-      
+      <div>
+        <h2>API Response</h2>
+        {apiResponse && (
+          <pre>{JSON.stringify(apiResponse, null, 2)}</pre>
+        )}
+      </div>
+      <div>
+        <h2>Search</h2>
+        <div>
+        <input
+            type="text"
+            placeholder="Enter first name or last name or identification number"
+            value={searchQuery}
+            onChange={handleSearchChange}
+            style={{
+              width: '100%', // Set the width to 100%
+              padding: '15px', // Increase padding for a larger input field
+              fontSize: '16px', // Adjust font size
+              boxSizing: 'border-box', // Include padding and border in the total width
+            }}
+/>
+          <button onClick={handleSearch} style={{ padding: '10px', cursor: 'pointer' }}>
+            Search
+          </button>
+        </div>
+        {/* Display search results */}
+
+        {searchResults.length > 0 ? (
+          searchResults.map((result) => (
+            <div key={result.id} className="search-result">
+              <div>
+                <strong>ID:</strong> {result.id}
+              </div>
+              <div>
+                <strong>Name:</strong> {result.first_name} {result.last_name}
+              </div>
+              <div>
+                <strong>Date of Birth:</strong> {result.date_of_birth}
+              </div>
+              <div>
+                <strong>Date of Expiry:</strong> {result.date_of_expiry}
+              </div>
+              <div>
+                <strong>Date of Issue:</strong> {result.date_of_issue}
+              </div>
+            </div>
+          ))
+        ) : (
+          <div className="no-results">
+            <p>No user found with the given search query.</p>
+          </div>
+        )}
+     
+      </div>
+
+
+
       <div>
         <h2>Previously Uploaded Data</h2>
+        {userDataList.length > 0 && (
+  <div className="uploaded-data">
         {userDataList.map((userData) => (
-          <div key={userData.id}>
+          <div key={userData.id} className="user-data">
             <div>
               <strong>ID:</strong> {userData.id}
             </div>
@@ -98,13 +196,12 @@ const ImageUploader = () => {
           </div>
         ))}
       </div>
+      )}
 
-      <div>
-        <h2>API Response</h2>
-        {apiResponse && (
-          <pre>{JSON.stringify(apiResponse, null, 2)}</pre>
-        )}
-      </div>
+      
+    </div>
+          <div>Not for commercial use</div>
+   
     </div>
   );
 };
